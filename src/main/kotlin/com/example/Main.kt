@@ -11,7 +11,9 @@ import java.util.concurrent.Executors
 fun main(args: Array<String>) {
     println("Server is started!")
     InetAddress.getByName("")
-    val server = HttpServer.create(InetSocketAddress(InetAddress.getByName("clearserver-production.up.railway.app"), 8080), 0)
+    //HttpServer.create()
+    //val server = HttpServer.create(InetSocketAddress(8080), 0)
+    val server = HttpServer.create()
     val serverContext = server.createContext(
         "/",
         MainResource(UsersDataSource())
