@@ -1,0 +1,1 @@
+web: ./build/install/com.example.ClearServer/bin/com.example.ClearServer
