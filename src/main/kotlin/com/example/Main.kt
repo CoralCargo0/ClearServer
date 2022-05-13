@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
 
 fun main(args: Array<String>) {
 
-    val server = HttpServer.create(InetSocketAddress("192.168.31.194", 8081), 0)
+    val server = HttpServer.create(InetSocketAddress(8080), 0)
     val serverContext = server.createContext(
         "/",
         MainResource(UsersDataSource())
