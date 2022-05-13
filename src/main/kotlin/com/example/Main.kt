@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
     InetAddress.getByName("")
     //HttpServer.create()
     //val server = HttpServer.create(InetSocketAddress(8080), 0)
-    val server = HttpServer.create(InetSocketAddress(0), 0)
+    val server = HttpServer.create(InetSocketAddress(8080), 0)
     val serverContext = server.createContext(
         "/",
         MainResource(UsersDataSource())
