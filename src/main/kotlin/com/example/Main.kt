@@ -22,5 +22,5 @@ fun main(args: Array<String>) {
     serverContext.filters.add(ParameterFilter())
     val executor = Executors.newCachedThreadPool()
     server.executor = executor
-    server.start()
+    //server.start()
 }
