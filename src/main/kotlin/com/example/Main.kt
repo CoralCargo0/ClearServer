@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
     InetAddress.getByName("")
     //HttpServer.create()
     //val server = HttpServer.create(InetSocketAddress(8080), 0)
-    val server = HttpServer.create()
+    val server = HttpServer.create(InetSocketAddress(8080), 0)
     val serverContext = server.createContext(
         "/",
         MainResource(UsersDataSource())
@@ -22,5 +22,5 @@ fun main(args: Array<String>) {
     serverContext.filters.add(ParameterFilter())
     val executor = Executors.newCachedThreadPool()
     server.executor = executor
-    //server.start()
+    server.start()
 }
