@@ -55,7 +55,7 @@ class ChatRoom(
         return usersDataSource[companion]!!
     }
 
-    fun getLastMessage(): Message? {
+    private fun getLastMessage(): Message? {
         return if (messages.isEmpty()) {
             null
         } else

@@ -53,16 +53,7 @@ class MainResource(
                             val password = params["password"]
                             val nickname = params["nickname"]
                             response =
-                                if (email.isNullOrEmpty() || password.isNullOrEmpty() || nickname.isNullOrEmpty()) {
-                                    Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
-                                } else {
-                                    var uid = UUID.randomUUID().toString().take(8)
-                                    while (users[uid] != null) {
-                                        uid = UUID.randomUUID().toString()
-                                    }
-                                    users.addUser(uid, email, password, nickname)
-                                    uid
-                                }
+                                registerUser(email, password, nickname)
                             println(response)
 
 
@@ -70,13 +61,7 @@ class MainResource(
                             val email = params["email"]
                             val password = params["password"]
                             println("$email + $password")
-                            if (email.isNullOrEmpty() || password.isNullOrEmpty()) {
-                                response = ""
-                            } else {
-                                response =
-                                    users.login(email, password) ?: Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
-
-                            }
+                            response = userLogin(email, password)
                             println(response)
 
                         }
@@ -89,14 +74,7 @@ class MainResource(
                             val connectionCode = params["code"]
                             //println("Create $uid + $connectionCode --- ${users[uid]?.nickname}")
                             response =
-                                if (!connectionCode.isNullOrEmpty() && !uid.isNullOrEmpty()) {
-                                    val roomUid = RoomsHolder.createNewRoom(connectionCode, uid, users)
-                                    users[uid]?.addRoom(RoomsHolder.getRoom(roomUid))
-                                    RoomsHolder.getRoom(roomUid)?.setMessageListener(newMessageListener)
-                                    roomUid
-                                } else {
-                                    Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
-                                }
+                                createRoom(uid, connectionCode)
 
                             println(response)
                         } else if (params[REQUEST_TYPE] == "connect") {
@@ -105,28 +83,7 @@ class MainResource(
                             val connectionCode = params["code"]
                             println("Connect $uid + $connectionCode")
                             response =
-                                Json.encodeToString(
-                                    if (!connectionCode.isNullOrEmpty() && !uid.isNullOrEmpty()) {
-                                        val roomUid = RoomsHolder.connectToRoom(connectionCode, uid)
-                                        RoomsHolder.getRoom(roomUid)?.users?.forEach { (k, v) ->
-                                            if (k != uid) {
-                                                users[k]?.sendString("${Constants.SOCKET_COMMAND_USER_CONNECTED}/$roomUid/${users[uid]?.nickname}")
-                                            }
-                                        }
-                                        users[uid]?.addRoom(RoomsHolder.getRoom(roomUid))
-                                        println("================================" + roomUid)
-                                        ConnectToChatResponseDto(
-                                            roomUid,
-                                            RoomsHolder.getRoom(roomUid)?.getCompanionSocket(uid)?.nickname ?: ""
-                                        )
-                                    } else {
-                                        println("================================" + Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE)
-                                        ConnectToChatResponseDto(
-                                            Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE,
-                                            Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
-                                        )
-                                    }
-                                )
+                                connectToRoom(uid, connectionCode)
                             println(response)
                         }
                     }
@@ -175,4 +132,61 @@ class MainResource(
         os.write(response.toByteArray())
         os.close()
     }
+
+    private fun connectToRoom(uid: String?, connectionCode: String?) =
+        Json.encodeToString(
+            if (!connectionCode.isNullOrEmpty() && !uid.isNullOrEmpty()) {
+                val roomUid = RoomsHolder.connectToRoom(connectionCode, uid)
+                RoomsHolder.getRoom(roomUid)?.users?.forEach { (k, v) ->
+                    if (k != uid) {
+                        users[k]?.sendString("${Constants.SOCKET_COMMAND_USER_CONNECTED}/$roomUid/${users[uid]?.nickname}")
+                    }
+                }
+                users[uid]?.addRoom(RoomsHolder.getRoom(roomUid))
+                println("================================" + roomUid)
+                ConnectToChatResponseDto(
+                    roomUid,
+                    RoomsHolder.getRoom(roomUid)?.getCompanionSocket(uid)?.nickname ?: ""
+                )
+            } else {
+                println("================================" + Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE)
+                ConnectToChatResponseDto(
+                    Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE,
+                    Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
+                )
+            }
+        )
+
+
+    private fun createRoom(uid: String?, connectionCode: String?) =
+        if (!connectionCode.isNullOrEmpty() && !uid.isNullOrEmpty()) {
+            val roomUid = RoomsHolder.createNewRoom(connectionCode, uid, users)
+            users[uid]?.addRoom(RoomsHolder.getRoom(roomUid))
+            RoomsHolder.getRoom(roomUid)?.setMessageListener(newMessageListener)
+            roomUid
+        } else {
+            Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
+        }
+
+
+    private fun userLogin(email: String?, password: String?) =
+        if (email.isNullOrEmpty() || password.isNullOrEmpty()) {
+            ""
+        } else {
+            users.login(email, password) ?: Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
+
+        }
+
+
+    fun registerUser(email: String?, password: String?, nickname: String?) =
+        if (email.isNullOrEmpty() || password.isNullOrEmpty() || nickname.isNullOrEmpty()) {
+            Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
+        } else {
+            var uid = UUID.randomUUID().toString().take(8)
+            while (users[uid] != null) {
+                uid = UUID.randomUUID().toString()
+            }
+            users.addUser(uid, email, password, nickname)
+            uid
+        }
 }

@@ -30,6 +30,7 @@ class UserSocket(
         if (isFree) {
             socket?.close()
             socketListener?.close()
+            socketListener = null
             try {
                 println("trying opem socket with port  --- $port")
                 socketListener = ServerSocket(port)
@@ -56,6 +57,7 @@ class UserSocket(
             socket =
                 socketListener?.accept()
 
+            socketListener = null
 
             println("Accept a client!")
             ois = BufferedReader(InputStreamReader(socket?.getInputStream()))
@@ -167,7 +169,7 @@ class UserSocket(
     }
 
     init {
-        port = lastUsedPort++
+        port = lastUsedPort
     }
 
     fun checkPassword(_email: String, _password: String): Boolean = email == _email && password == _password
@@ -175,6 +177,6 @@ class UserSocket(
     fun getUsersWithMessages() = ChatsWithLastMessages(chatRooms.map { it.value.getUserWithMessage(userUid) })
 
     companion object {
-        private var lastUsedPort: Int = 8092
+        private var lastUsedPort: Int = 8083
     }
 }
