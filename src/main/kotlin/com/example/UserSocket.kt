@@ -25,15 +25,20 @@ class UserSocket(
     private val chatRooms: HashMap<String, ChatRoom> = hashMapOf()
     private var ois: BufferedReader? = null
     private var ous: BufferedWriter? = null
-
+    var initSock = false
     fun connectToSocket(): Int {
         if (isFree) {
-            socket?.close()
-            socketListener?.close()
-            socketListener = null
+//            socket?.close()
+//            socketListener?.close()
+//            socketListener?.channel?.close()
+//            socketListener = null
+//            socket = null
             try {
                 println("trying opem socket with port  --- $port")
-                socketListener = ServerSocket(port)
+                if (initSock) {
+                    socketListener = ServerSocket(port)
+                    initSock = false
+                }
 
                 CoroutineScope(Dispatchers.IO).launch {
                     holdSocket()
@@ -57,7 +62,7 @@ class UserSocket(
             socket =
                 socketListener?.accept()
 
-            socketListener = null
+            // socketListener = null
 
             println("Accept a client!")
             ois = BufferedReader(InputStreamReader(socket?.getInputStream()))
@@ -74,6 +79,8 @@ class UserSocket(
 
         } catch (e: Throwable) {
             println("Error in holdsocket - ${e.message}")
+            initSock = true
+            return
         }
 
         var line: String?
@@ -114,6 +121,8 @@ class UserSocket(
         socket!!.close()
         println(socket!!.isClosed)
         isFree = true
+        socket = null
+        socketListener = null
 //        chatRooms.forEach { (k, v) ->
 //            v.getCompanionSocket(userUid).sendString(SOCKET_COMMAND_USER_OFFLINE + k)
 //        }
@@ -169,7 +178,8 @@ class UserSocket(
     }
 
     init {
-        port = lastUsedPort
+        port = lastUsedPort++
+        socketListener = ServerSocket(port)
     }
 
     fun checkPassword(_email: String, _password: String): Boolean = email == _email && password == _password

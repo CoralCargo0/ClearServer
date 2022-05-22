@@ -18,11 +18,6 @@ class MainResource(
     private val users: UsersDataSource
 ) : HttpHandler {
 
-    private val holder = RoomsHolder
-
-    //val userForTest = com.example.UserSocket("12363", "trokay@tut.by", "12345678", "30")
-    //val userForTest2 = com.example.UserSocket("412424", "geloyakort@gmail.com", "qwertyuiop", "31")
-
     private val newMessageListener = object : ChatRoom.OnNewMessageAppearsListener {
         override fun onNewMessageAppears(chatId: String, users: List<String>) {
             users.forEach { userId ->
@@ -72,7 +67,6 @@ class MainResource(
 
                             val uid = params["uid"]
                             val connectionCode = params["code"]
-                            //println("Create $uid + $connectionCode --- ${users[uid]?.nickname}")
                             response =
                                 createRoom(uid, connectionCode)
 
@@ -81,7 +75,6 @@ class MainResource(
 
                             val uid = params["uid"]
                             val connectionCode = params["code"]
-                            println("Connect $uid + $connectionCode")
                             response =
                                 connectToRoom(uid, connectionCode)
                             println(response)
@@ -92,12 +85,10 @@ class MainResource(
                         if (params[REQUEST_TYPE] == "getUsersWithMessage") {
 
                             val uid = params["uid"]
-                            //println("rooms - " + uid)
                             response =
                                 if (uid != null) {
                                     val dd: ChatsWithLastMessages =
                                         users[uid]?.getUsersWithMessages() ?: ChatsWithLastMessages()
-                                    println("rooms -${Json.encodeToString(dd)}")
                                     Json.encodeToString(dd)
                                 } else Constants.NOT_FOUND_ERROR_MESSAGE_RESPONSE
                             println(response)
